@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Styles for the floor plan and exhibitor markers */
+        .floor-plan-container {
+            position: relative;
+            width: 1000px;
+            height: 600px;
+            background-color: #f0f0f0;
+            overflow: hidden; /* Hide overflowing content */
+            transition: transform 0.5s ease-in-out; /* Transition for zoom effect */
+        }
+
+        .floor-plan {
+            max-width: 100%;
+            max-height: 100%;
+            transition: opacity 0.5s ease-in-out; /* Transition for opacity effect */
+        }
+
+        .exhibitor-marker {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            animation: dropPin 1s ease-in-out; /* Animation for dropping the pin */
+        }
+
+        @keyframes dropPin {
+            from {
+                transform: translateY(-100px); /* Start position above the floor plan */
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0); /* End position at the specified x, y coordinates */
+                opacity: 1;
+            }
+        }
+
+        .pin-icon {
+            width: 24px;
+            height: 48px;
+            background-image: url('pin.png'); /* Replace 'pin.png' with your pin icon image */
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-right: 5px; /* Add a 5px gap to the right of the pin icon */
+        }
+
+        .number-icon {
+            width: 18px; /* Adjust the size as needed */
+            height: 18px; /* Adjust the size as needed */
+            background-color: #ff0000; /* Adjust the background color */
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 5px; /* Add a 5px gap to the right of the number */
+        }
+
+        .exhibitor-list-container {
+            max-width: 1000px; /* Add a max width of 1000px */
+            height: 200px; /* Adjust the height as needed */
+            overflow-y: scroll; /* Always show the vertical scrollbar */
+        }
+
+        /* Style for the exhibitor list */
+        .exhibitor-list {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 0;
+            list-style: none; /* Remove default list bullet points */
+        }
+
+        .exhibitor-list li {
+            flex: 0 0 calc(48% - 10px); /* Three columns with a gap of 10px */
+            margin-right: 10px; /* Add a gap between columns */
+            margin-bottom: 10px;
+            padding: 0px 0px 0px 10px;
+            background-color: #ececec;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            height: 40px; /* Height of each list item */
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .exhibitor-text {
+            font-size: 12px;
+            color: black;
+        }
+    </style>
+    <title>Interactive Floor Plan with Exhibitor List</title>
+</head>
+<body>
+    <div class="floor-plan-container" id="floorPlanContainer">
+        <div class="floor-plan" id="floorPlan1">
+            <img src="sample1.jpg" width="1000" height="auto" alt=""/>
+        </div>
+
+        <div class="floor-plan" id="floorPlan2" style="display: none;">
+            <img src="sample2.jpg" width="1000" height="auto" alt=""/>
+        </div>
+    </div>
+
+    <div style="padding: 5px;">
+        <h2>Exhibitors list</h2>
+    </div>
+
+    <div class="exhibitor-list-container">
+        <ul class="exhibitor-list" id="exhibitorList">
+            <!-- Exhibitors will be generated here -->
+        </ul>
+    </div>
+
+    <h1>&nbsp; </h1>
+
+    <script>
+        const floorPlanContainer = document.getElementById("floorPlanContainer");
+        const floorPlan1 = document.getElementById("floorPlan1");
+        const floorPlan2 = document.getElementById("floorPlan2");
+        const exhibitorList = document.getElementById("exhibitorList");
+        let currentFloorPlan = floorPlan1; // Track the current floor plan
+
+        function pinExhibitorLocation(exhibitorName, x, y, floorPlan) {
+            const marker = document.createElement("div");
+            marker.className = "exhibitor-marker";
+            marker.style.left = x + "px";
+            marker.style.top = y + "px";
+            
+            const pinIcon = document.createElement("div");
+            pinIcon.className = "pin-icon";
+            
+            const exhibitorText = document.createElement("div");
+            exhibitorText.className = "exhibitor-text";
+            exhibitorText.textContent = exhibitorName;
+            
+            marker.appendChild(pinIcon);
+            marker.appendChild(exhibitorText);
+            
+            floorPlan.appendChild(marker);
+
+            // Add a fade-out effect over 5 seconds
+            setTimeout(() => {
+                marker.style.transition = "opacity 2s ease-out";
+                marker.style.opacity = 0;
+            }, 3000); // 3000 milliseconds (3 seconds) before fading out
+            
+            // Remove the marker after it has faded out
+            setTimeout(() => {
+                marker.remove();
+            }, 5000); // 5000 milliseconds (5 seconds) after initial display
+        }
+
+        // Generate exhibitors with automatic numbering in the list
+        const exhibitors = [
+            { name: "Exhibitor 1 on Map 1", x: 150, y: 250, floorPlan: floorPlan1 },
+            { name: "Exhibitor 2 on Map 1", x: 450, y: 350, floorPlan: floorPlan1 },
+            { name: "Exhibitor 3 on Map 2", x: 250, y: 150, floorPlan: floorPlan2 },
+            { name: "Exhibitor 4 on Map 2", x: 550, y: 250, floorPlan: floorPlan2 },
+            { name: "Exhibitor 1 on Map 1", x: 150, y: 250, floorPlan: floorPlan1 },
+            { name: "Exhibitor 2 on Map 1", x: 450, y: 350, floorPlan: floorPlan1 },
+            { name: "Exhibitor 3 on Map 2", x: 250, y: 150, floorPlan: floorPlan2 },
+            { name: "Exhibitor 4 on Map 2", x: 550, y: 250, floorPlan: floorPlan2 },
+            // Add more exhibitors here
+        ];
+
+        exhibitors.forEach((exhibitorData, index) => {
+            const exhibitorItem = document.createElement("li");
+            exhibitorItem.setAttribute("data-x", exhibitorData.x);
+            exhibitorItem.setAttribute("data-y", exhibitorData.y);
+            
+            const numberIcon = document.createElement("div");
+            numberIcon.className = "number-icon";
+            numberIcon.textContent = (index + 1).toString(); // Convert to string to display in the round shape
+            
+            const exhibitorName = document.createElement("div");
+            exhibitorName.className = "exhibitor-text";
+            exhibitorName.textContent = exhibitorData.name;
+            
+            exhibitorItem.appendChild(numberIcon);
+            exhibitorItem.appendChild(exhibitorName);
+            
+            exhibitorList.appendChild(exhibitorItem);
+            
+            exhibitorItem.addEventListener("click", () => {
+                const x = parseInt(exhibitorItem.getAttribute("data-x"));
+                const y = parseInt(exhibitorItem.getAttribute("data-y"));
+                const floorPlan = exhibitorData.floorPlan;
+                
+                if (floorPlan !== currentFloorPlan) {
+                    // Only apply transition if the target floor plan is different
+                    switchFloorPlan(floorPlan);
+                }
+                
+                pinExhibitorLocation(exhibitorData.name, x, y, floorPlan);
+            });
+        });
+
+        function switchFloorPlan(floorPlanToShow) {
+            // Apply the transition effect for zooming when switching floor plans
+            floorPlanContainer.style.transform = "scale(0.1)"; // Zoom out effect
+            
+            setTimeout(() => {
+                // Hide all floor plans and display the target floor plan
+                floorPlan1.style.display = "none";
+                floorPlan2.style.display = "none";
+                floorPlanToShow.style.display = "block";
+                currentFloorPlan = floorPlanToShow; // Update the current floor plan
+                
+                // Apply the transition effect for zooming when switching floor plans
+                floorPlanContainer.style.transform = "scale(1)"; // Zoom in effect
+            }, 500); // 500 milliseconds (0.5 seconds) delay before zooming in
+        }
+    </script>
+</body>
+</html>
